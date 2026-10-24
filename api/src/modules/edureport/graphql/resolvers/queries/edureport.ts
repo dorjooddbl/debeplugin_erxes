@@ -1,5 +1,17 @@
+import { notImplemented } from "../notImplemented.ts";
+
+// Permission per operation: docs/SPEC.md §5.
 export const edureportQueries = {
-  // Gateway smoke check: reads no data and checks no permission. It goes
-  // away once the real operations (docs/SPEC.md §5) exist.
-  edureportHealth: () => "ok",
+  edureportClassList: notImplemented("showClasses"),
+  edureportClassDetail: notImplemented("showClasses"),
+  edureportStudentList: notImplemented("showClasses"),
+  edureportAttendanceList: notImplemented("showClasses"),
+  edureportAttendanceSummary: notImplemented("showClasses"),
+  edureportRubricList: notImplemented("showClasses"),
+  edureportAssignmentList: notImplemented("showClasses"),
+  edureportSubmissionList: notImplemented("showClasses"),
+  edureportSubmissionDetail: notImplemented("showClasses"),
+  edureportReportDetail: notImplemented("showClasses"),
+  edureportReportList: notImplemented("showClasses"),
+  edureportJobStatus: notImplemented("showClasses"),
 };

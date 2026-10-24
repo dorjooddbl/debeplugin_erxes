@@ -31,7 +31,7 @@ api/                           edureport_api
     main.ts                    startPlugin({ name, port }) — erxes.json-оос
     connectionResolvers.ts     IModels, IContext, loadClasses, generateModels
     meta/permissions.ts
-    apollo/                    typeDefs.ts, schema/, resolvers/, subscription.ts
+    apollo/                    typeDefs.ts, schema/, resolvers/, subscription.cjs
     worker/                    index.ts, feedbackWorker.ts, reportWorker.ts
     seed/seed.ts               демо өгөгдөл
     modules/edureport/

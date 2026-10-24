@@ -10,6 +10,10 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
+    // src/apollo/subscription.cjs is plain JS the gateway imports; tsc
+    // type-checks its JSDoc and copies it into dist.
+    "allowJs": true,
+    "checkJs": true,
     "types": [
       "node"
     ]
@@ -18,6 +22,7 @@
     "src"
   ],
   "exclude": [
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "src/__tests__"
   ]
 }

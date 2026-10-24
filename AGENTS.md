@@ -21,12 +21,12 @@ checkout whose `.env` lists `edureport` in `ENABLED_PLUGINS`.
 | --- | --- |
 | `api/src/main.ts` | `startPlugin` with name and port from `erxes.json`; tenant models on the context. |
 | `api/src/connectionResolvers.ts` | `IModels`, `IContext`, `generateModels`. |
-| `api/src/apollo/` | `typeDefs.ts`, `schema/` and `resolvers/` merge the module's schema and resolvers; `subscription.ts`. |
+| `api/src/apollo/` | `typeDefs.ts`, `schema/` and `resolvers/` merge the module's schema and resolvers; `subscription.cjs` is the gateway subscription plugin. |
 | `api/src/modules/edureport/` | `@types/` (SPEC §3), `db/definitions/`, `db/models/`, `graphql/schemas/`, `graphql/resolvers/`, `services/`. |
 | `api/src/meta/permissions.ts` | Permission config (SPEC §4). |
 | `api/src/worker/` | BullMQ `edureport-feedback` and `edureport-report` workers (SPEC §7). |
 | `api/src/seed/seed.ts` | Demo data. |
-| `api/src/__tests__/` | Jest tests (`*.test.ts`). They never use `MONGO_URL`; real-Mongo tests run only with `EDUREPORT_TEST_MONGO_URL`. |
+| `api/src/__tests__/` | Jest tests (`*.test.ts`). They never use `MONGO_URL`; real-Mongo tests run only with `EDUREPORT_TEST_MONGO_URL`. `helpers/spec.ts` is the SPEC §4–§5 operation/permission table the tests check the code against. |
 | `ui/` | Module Federation remote mounted by core-ui at `/edureport/*`. |
 
 ## Commands
@@ -68,10 +68,22 @@ See `docs/erxes-integration.md`. In short:
   `/edureport/settings` and its sidebar through `AppLayout`; the host does not
   mount a separate settings expose. Keep `ui/rspack.config.ts` in sync with
   `erxes.json`. Add notification widgets only when implementing notifications.
-- `api/src/print-schema.ts` prints `typeDefs` from `api/src/apollo/typeDefs.ts` to `api/generated/schema.graphql`.
-- `erxes-api-shared/utils` connects to Mongo when `createGenerateModels` runs, so
-  tests import schemas, resolvers and services, never `connectionResolvers.ts`
-  or `main.ts`.
+- `api/src/print-schema.ts` prints the client SDL (`api/src/apollo/clientSdl.ts`: the
+  subgraph `typeDefs` plus the `Subscription` fields from `subscription.cjs`) to
+  `api/generated/schema.graphql`.
+- `api/src/apollo/subscription.cjs` is served as `/subscriptionPlugin.js`; the
+  gateway downloads it, saves it in its own folder and imports it. Keep it plain
+  CommonJS with no imports (no TypeScript syntax, plugin code or models); tsc
+  checks its JSDoc (`checkJs`). Its payload types live in the subgraph schema so
+  they reach the supergraph. The gateway downloads plugins only when it starts:
+  restart it after changing the file or `hasSubscriptions`.
+- Every resolver awaits `checkPermission(action)` with its SPEC §5 action before
+  anything else; operations not built yet use `notImplemented(action)`.
+- `erxes-api-shared/utils` opens Redis on import and connects to Mongo when
+  `createGenerateModels` runs. Jest maps it to `src/__tests__/helpers/sharedUtils.ts`
+  (`moduleNameMapper`); add any export the code under test needs there. Tests
+  import schemas, resolvers and services, never `connectionResolvers.ts` (except
+  `import type`) or `main.ts`.
 - `erxes-ui`, `ui-modules` and `erxes-api-shared` are the npm packages
   `@erxes/ui`, `@erxes/ui-modules` and `@erxes/api-shared`, installed under
   those import names with exact npm aliases. The tested cohort is
