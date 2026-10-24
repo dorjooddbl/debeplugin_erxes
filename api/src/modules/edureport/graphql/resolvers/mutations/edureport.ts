@@ -8,6 +8,7 @@ import {
   assertStudentsInClass,
   assertSubmissionAccess,
 } from "../../../services/access.ts";
+import { makeJobId, initProgress } from "../../../services/progress.ts";
 import {
   MAX_ENTRIES,
   MAX_ITEMS,
@@ -21,7 +22,7 @@ import {
   assertRubricCriteria,
   parseStudentRows,
 } from "../../../services/validation.ts";
-import { notImplemented } from "../notImplemented.ts";
+import { feedbackQueue, reportQueue } from "../../../../../worker/index.ts";
 
 type ClassEditArgs = { _id: string } & {
   [K in keyof Omit<IClass, "teacherId">]?: IClass[K] | null;
@@ -224,7 +225,93 @@ export const edureportMutations = {
     );
   },
 
-  edureportFeedbackGenerate: notImplemented("feedbackGenerate"),
+  async edureportFeedbackGenerate(
+    _root: unknown,
+    {
+      assignmentId,
+      submissionIds,
+    }: { assignmentId: string; submissionIds?: string[] | null },
+    context: IContext,
+  ) {
+    await context.checkPermission("feedbackGenerate");
+
+    const assignment = await assertAssignmentAccess(context.models, context, assignmentId);
+
+    if (assignment.kind !== "essay") {
+      throw new ExpectedError("Зөвхөн эссэ даалгаварт AI санал хүсэлт үүсгэж болно");
+    }
+
+    if (!assignment.rubricId) {
+      throw new ExpectedError("Эссэ даалгавар rubric-гүй байна");
+    }
+
+    const rubric = await context.models.Rubrics.getRubric(assignment.rubricId);
+
+    // Determine which submissions to queue.
+    let eligibleIds: string[];
+
+    if (submissionIds && submissionIds.length > 0) {
+      // Filter to only those that are in a queueable state.
+      const stuckBefore = new Date(Date.now() - 30 * 60 * 1000);
+      const subs = await context.models.Submissions.find({
+        _id: { $in: submissionIds },
+        assignmentId,
+        $or: [
+          { status: { $in: ["submitted", "failed", "aiDrafted"] } },
+          { status: "queued", queuedAt: { $not: { $gte: stuckBefore } } },
+        ],
+      });
+
+      eligibleIds = subs.map((s) => s._id);
+    } else {
+      // Get all submitted/failed/aiDrafted/stuck-queued submissions.
+      const stuckBefore = new Date(Date.now() - 30 * 60 * 1000);
+      const subs = await context.models.Submissions.find({
+        assignmentId,
+        $or: [
+          { status: { $in: ["submitted", "failed", "aiDrafted"] } },
+          { status: "queued", queuedAt: { $not: { $gte: stuckBefore } } },
+        ],
+      });
+
+      eligibleIds = subs.map((s) => s._id);
+    }
+
+    if (!eligibleIds.length) {
+      return { jobId: "", queued: 0 };
+    }
+
+    const queuedIds = await context.models.Submissions.markQueued(eligibleIds);
+
+    if (!queuedIds.length) {
+      return { jobId: "", queued: 0 };
+    }
+
+    const jobId = makeJobId(context.subdomain, "feedback");
+
+    await initProgress(jobId, assignment.classId, queuedIds.length);
+
+    // Fetch student codes for each queued submission.
+    const submissionDocs = await context.models.Submissions.find({ _id: { $in: queuedIds } });
+    const studentIds = submissionDocs.map((s) => s.studentId);
+    const studentDocs = await context.models.Students.find({ _id: { $in: studentIds }, classId: assignment.classId });
+    const codeById = new Map(studentDocs.map((s) => [s._id, s.code]));
+
+    for (const sub of submissionDocs) {
+      const studentCode = codeById.get(sub.studentId) ?? sub.studentId;
+
+      await feedbackQueue.add("feedback", {
+        subdomain: context.subdomain,
+        jobId,
+        submissionId: sub._id,
+        assignmentId,
+        rubricId: rubric._id,
+        studentCode,
+      }, { attempts: 3, backoff: { type: "exponential", delay: 5000 } });
+    }
+
+    return { jobId, queued: queuedIds.length };
+  },
 
   // The model allows essays only, not while queued, and 0 ≤ score ≤ maxScore.
   async edureportSubmissionApprove(
@@ -243,7 +330,63 @@ export const edureportMutations = {
       approvedBy: context.user._id,
     });
   },
-  edureportReportGenerate: notImplemented("reportsManage"),
-  edureportReportEdit: notImplemented("reportsManage"),
-  edureportReportApprove: notImplemented("reportsApprove"),
+  async edureportReportGenerate(
+    _root: unknown,
+    { classId, from, to }: { classId: string; from: string; to: string },
+    context: IContext,
+  ) {
+    await context.checkPermission("reportsManage");
+    await assertClassAccess(context.models, context, classId);
+
+    assertDate(from);
+    assertDate(to);
+
+    if (from > to) {
+      throw new ExpectedError("Эхлэх огноо дуусах огнооноос хойш байна");
+    }
+
+    const report = await context.models.Reports.createDraft(classId, from, to, context.user._id);
+    const jobId = makeJobId(context.subdomain, "report");
+
+    await initProgress(jobId, classId, 1);
+    await reportQueue.add("report", {
+      subdomain: context.subdomain,
+      jobId,
+      reportId: report._id,
+      classId,
+      from,
+      to,
+    }, { attempts: 3, backoff: { type: "exponential", delay: 5000 } });
+
+    return { reportId: report._id, jobId };
+  },
+
+  async edureportReportEdit(
+    _root: unknown,
+    { _id, teacherText }: { _id: string; teacherText: string },
+    context: IContext,
+  ) {
+    await context.checkPermission("reportsManage");
+
+    const report = await context.models.Reports.getReport(_id);
+
+    await assertClassAccess(context.models, context, report.classId);
+    assertFilled(teacherText, "Тайлангийн текст");
+
+    return context.models.Reports.updateText(_id, teacherText);
+  },
+
+  async edureportReportApprove(
+    _root: unknown,
+    { _id }: { _id: string },
+    context: IContext,
+  ) {
+    await context.checkPermission("reportsApprove");
+
+    const report = await context.models.Reports.getReport(_id);
+
+    await assertClassAccess(context.models, context, report.classId);
+
+    return context.models.Reports.approve(_id, context.user._id);
+  },
 };

@@ -1,3 +1,4 @@
+import { ExpectedError } from "erxes-api-shared/utils";
 import type { IContext } from "../../../../../connectionResolvers.ts";
 import type { SubmissionStatus } from "../../../@types/index.ts";
 import {
@@ -6,8 +7,9 @@ import {
   assertSubmissionAccess,
   teacherScopeFilter,
 } from "../../../services/access.ts";
+import { summarizeAttendance } from "../../../services/metrics.ts";
+import { getProgress } from "../../../services/progress.ts";
 import { assertDateRange, parsePage } from "../../../services/validation.ts";
-import { notImplemented } from "../notImplemented.ts";
 
 // Permission per operation: docs/SPEC.md §5. Each resolver checks it first.
 export const edureportQueries = {
@@ -54,7 +56,22 @@ export const edureportQueries = {
     return context.models.Attendances.listByRange(classId, from, to);
   },
 
-  edureportAttendanceSummary: notImplemented("showClasses"),
+  async edureportAttendanceSummary(
+    _root: unknown,
+    { classId, from, to }: { classId: string; from: string; to: string },
+    context: IContext,
+  ) {
+    await context.checkPermission("showClasses");
+    await assertClassAccess(context.models, context, classId);
+    assertDateRange(from, to);
+
+    const [students, attendances] = await Promise.all([
+      context.models.Students.listByClass(classId),
+      context.models.Attendances.listByRange(classId, from, to),
+    ]);
+
+    return summarizeAttendance(students, attendances, from, to);
+  },
 
   // The user's own rubrics; owners and classesViewAll see every teacher's.
   async edureportRubricList(_root: unknown, _args: unknown, context: IContext) {
@@ -90,7 +107,43 @@ export const edureportQueries = {
     return assertSubmissionAccess(context.models, context, _id);
   },
 
-  edureportReportDetail: notImplemented("showClasses"),
-  edureportReportList: notImplemented("showClasses"),
-  edureportJobStatus: notImplemented("showClasses"),
+  async edureportReportDetail(_root: unknown, { _id }: { _id: string }, context: IContext) {
+    await context.checkPermission("showClasses");
+
+    const report = await context.models.Reports.getReport(_id);
+
+    await assertClassAccess(context.models, context, report.classId);
+
+    return report;
+  },
+
+  async edureportReportList(_root: unknown, { classId }: { classId: string }, context: IContext) {
+    await context.checkPermission("showClasses");
+    await assertClassAccess(context.models, context, classId);
+
+    return context.models.Reports.find({ classId }).sort({ createdAt: -1, _id: 1 });
+  },
+
+  async edureportJobStatus(_root: unknown, { jobId }: { jobId: string }, context: IContext) {
+    await context.checkPermission("showClasses");
+
+    if (!jobId.startsWith(context.subdomain + ":")) {
+      throw new ExpectedError("Ажил олдсонгүй");
+    }
+
+    const progress = await getProgress(jobId);
+
+    if (!progress) {
+      throw new ExpectedError("Ажил олдсонгүй");
+    }
+
+    await assertClassAccess(context.models, context, progress.classId);
+
+    return {
+      total: progress.total,
+      done: progress.done,
+      failed: progress.failed,
+      finished: progress.finished,
+    };
+  },
 };

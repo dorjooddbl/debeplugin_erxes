@@ -5,6 +5,8 @@ import { typeDefs } from "./apollo/typeDefs.ts";
 import { manifest } from "./config.ts";
 import { generateModels } from "./connectionResolvers.ts";
 import { permissions } from "./meta/permissions.ts";
+import { startFeedbackWorker } from "./worker/feedbackWorker.ts";
+import { startReportWorker } from "./worker/reportWorker.ts";
 
 // startPlugin serves the federated subgraph on /graphql, mounts /health,
 // wires tRPC + agent-tools, parses the gateway `user`/`hostname` headers into
@@ -27,3 +29,6 @@ startPlugin({
     permissions,
   },
 });
+
+startFeedbackWorker();
+startReportWorker();

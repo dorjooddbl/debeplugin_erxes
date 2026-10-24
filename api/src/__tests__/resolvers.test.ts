@@ -18,6 +18,7 @@ const IMPLEMENTED = new Set([
   "edureportStudentList",
   "edureportStudentsImport",
   "edureportAttendanceList",
+  "edureportAttendanceSummary",
   "edureportAttendanceMark",
   "edureportRubricList",
   "edureportRubricSave",
@@ -28,6 +29,13 @@ const IMPLEMENTED = new Set([
   "edureportSubmissionDetail",
   "edureportSubmissionsAdd",
   "edureportSubmissionApprove",
+  "edureportFeedbackGenerate",
+  "edureportReportGenerate",
+  "edureportReportDetail",
+  "edureportReportList",
+  "edureportReportEdit",
+  "edureportReportApprove",
+  "edureportJobStatus",
 ]);
 
 const run = (resolver: Resolver | undefined, checkPermission: IContext["checkPermission"]) => {
@@ -55,12 +63,16 @@ describe.each([
     expect(checkPermission).toHaveBeenCalledWith(action);
   });
 
-  it.each(Object.keys(spec).filter((name) => !IMPLEMENTED.has(name)))(
-    "%s is not implemented yet",
-    async (name) => {
-      const checkPermission = jest.fn<Promise<void>, [string]>().mockResolvedValue();
+  const notYet = Object.keys(spec).filter((name) => !IMPLEMENTED.has(name));
 
-      await expect(run(map[name], checkPermission)).rejects.toThrow("Хэрэгжээгүй байна");
-    },
-  );
+  if (notYet.length > 0) {
+    it.each(notYet)(
+      "%s is not implemented yet",
+      async (name) => {
+        const checkPermission = jest.fn<Promise<void>, [string]>().mockResolvedValue();
+
+        await expect(run(map[name], checkPermission)).rejects.toThrow("Хэрэгжээгүй байна");
+      },
+    );
+  }
 });
