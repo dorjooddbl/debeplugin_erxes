@@ -1,0 +1,30 @@
+{
+  "name": "debe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:api": "pnpm --filter debe_api dev",
+    "dev:ui": "pnpm run codegen && pnpm --filter debe_ui dev",
+    "codegen": "pnpm --filter debe_api schema:print && pnpm --filter debe_ui codegen",
+    "build": "pnpm run codegen && pnpm --filter debe_api build && pnpm --filter debe_ui build",
+    "check": "pnpm run codegen && pnpm --filter debe_api check && pnpm --filter debe_ui check",
+    "lint": "oxlint",
+    "fmt": "oxfmt"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "18.3.1",
+      "react-dom": "18.3.1",
+      "@sentry/node": "10.76.2",
+      "@opentelemetry/api": "1.9.1",
+      "@opentelemetry/instrumentation": "0.220.0",
+      "@opentelemetry/sdk-trace-base": "2.12.0"
+    }
+  },
+  "packageManager": "pnpm@12.6.0"
+}
