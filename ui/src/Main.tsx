@@ -11,6 +11,9 @@ const ClassesPage = lazy(() =>
 const AttendancePage = lazy(() =>
   import("./pages/AttendancePage").then((module) => ({ default: module.AttendancePage })),
 );
+const EssaysPage = lazy(() =>
+  import("./pages/EssaysPage").then((module) => ({ default: module.EssaysPage })),
+);
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })),
 );
@@ -26,6 +29,7 @@ export const Edureport = () => (
         <Route index element={<Navigate to="classes" replace />} />
         <Route path="classes" element={<ClassesPage />} />
         <Route path="attendance" element={<AttendancePage />} />
+        <Route path="essays" element={<EssaysPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Routes>
     </Suspense>

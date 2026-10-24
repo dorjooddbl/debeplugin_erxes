@@ -12,6 +12,8 @@
     "seed": "tsx --env-file-if-exists=../.env src/seed/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "4.0.91",
+    "ai": "7.0.136",
     "erxes-api-shared": "npm:@erxes/api-shared@3.3.4",
     "graphql": "^16.14.2",
     "graphql-tag": "^2.12.7",

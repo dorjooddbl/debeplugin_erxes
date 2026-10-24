@@ -1,4 +1,4 @@
-import { IconCalendarCheck, IconSchool, IconSettings } from "@tabler/icons-react";
+import { IconCalendarCheck, IconSchool, IconSettings, IconSparkles } from "@tabler/icons-react";
 // Root import on purpose: core-ui shares `erxes-ui` as a Module Federation
 // singleton keyed on the bare specifier, so deep imports would bundle a second
 // private copy instead of reusing the host's.
@@ -14,6 +14,7 @@ export const Navigation = () => (
       <Sidebar.Menu>
         <NavigationMenuLinkItem name="Анги, сурагчид" icon={IconSchool} path={`${root}/classes`} />
         <NavigationMenuLinkItem name="Ирцийн бүртгэл" icon={IconCalendarCheck} path={`${root}/attendance`} />
+        <NavigationMenuLinkItem name="Эссэ & AI үнэлгээ" icon={IconSparkles} path={`${root}/essays`} />
         <NavigationMenuLinkItem name="Тохиргоо" icon={IconSettings} path={`${root}/settings`} />
       </Sidebar.Menu>
     </Sidebar.GroupContent>

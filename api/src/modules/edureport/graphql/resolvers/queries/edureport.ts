@@ -6,6 +6,7 @@ import {
   assertSubmissionAccess,
   teacherScopeFilter,
 } from "../../../services/access.ts";
+import { summarizeAttendance } from "../../../services/metrics.ts";
 import { assertDateRange, parsePage } from "../../../services/validation.ts";
 import { notImplemented } from "../notImplemented.ts";
 
@@ -54,7 +55,22 @@ export const edureportQueries = {
     return context.models.Attendances.listByRange(classId, from, to);
   },
 
-  edureportAttendanceSummary: notImplemented("showClasses"),
+  async edureportAttendanceSummary(
+    _root: unknown,
+    { classId, from, to }: { classId: string; from: string; to: string },
+    context: IContext,
+  ) {
+    await context.checkPermission("showClasses");
+    await assertClassAccess(context.models, context, classId);
+    assertDateRange(from, to);
+
+    const [students, attendances] = await Promise.all([
+      context.models.Students.listByClass(classId),
+      context.models.Attendances.listByRange(classId, from, to),
+    ]);
+
+    return summarizeAttendance(students, attendances, from, to);
+  },
 
   // The user's own rubrics; owners and classesViewAll see every teacher's.
   async edureportRubricList(_root: unknown, _args: unknown, context: IContext) {
