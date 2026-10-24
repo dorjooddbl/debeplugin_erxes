@@ -25,7 +25,7 @@ checkout whose `.env` lists `edureport` in `ENABLED_PLUGINS`.
 | `api/src/modules/edureport/` | `@types/` (SPEC §3), `db/definitions/`, `db/models/`, `graphql/schemas/`, `graphql/resolvers/`, `services/`. |
 | `api/src/meta/permissions.ts` | Permission config (SPEC §4). |
 | `api/src/worker/` | BullMQ `edureport-feedback` and `edureport-report` workers (SPEC §7). |
-| `api/src/seed/seed.ts` | Demo data. |
+| `api/src/seed/seed.ts` | Demo data (`pnpm run seed [subdomain]`, default `localhost`): class 7Б, 30 students, 8 weeks of attendance, a scored task, a rubric and 30 essays. Fixed ids; each run replaces the previous seed. |
 | `api/src/__tests__/` | Jest tests (`*.test.ts`). They never use `MONGO_URL`; real-Mongo tests run only with `EDUREPORT_TEST_MONGO_URL`. `helpers/spec.ts` is the SPEC §4–§5 operation/permission table the tests check the code against. |
 | `ui/` | Module Federation remote mounted by core-ui at `/edureport/*`. |
 
@@ -37,6 +37,10 @@ Use Node 22 (`mise use node@22`; `mise.toml` is excluded from git).
 - `pnpm run dev:api` / `pnpm run dev:ui`
 - `pnpm run codegen`
 - `pnpm run check`, `pnpm run lint`, `pnpm run build`, `pnpm run test`, `pnpm run fmt`
+- `pnpm run seed [subdomain]` — demo data into `MONGO_URL` (repo `.env`)
+- `EDUREPORT_TEST_MONGO_URL=<mongodb url> pnpm run test` — also runs the
+  real-Mongo model tests; each suite creates and drops its own
+  `edureport_jest_*` database on that server
 - `docker build --build-arg UI_ENTRY_URL=<remoteEntry.js URL> -t <image> .`
 
 Run `check`, `lint`, `build` and `test` before calling a change done.
@@ -81,9 +85,14 @@ See `docs/erxes-integration.md`. In short:
   anything else; operations not built yet use `notImplemented(action)`.
 - `erxes-api-shared/utils` opens Redis on import and connects to Mongo when
   `createGenerateModels` runs. Jest maps it to `src/__tests__/helpers/sharedUtils.ts`
-  (`moduleNameMapper`); add any export the code under test needs there. Tests
-  import schemas, resolvers and services, never `connectionResolvers.ts` (except
-  `import type`) or `main.ts`.
+  (`moduleNameMapper`); add any export the code under test needs there. Model
+  tests build models with `loadClasses` on their own connection
+  (`__tests__/helpers/mongo.ts`); `generateModels` and `main.ts` stay out of tests.
+- Models (`db/models/`) hold the SPEC §3 rules. Status changes are conditional
+  updates on the current status; only `Submissions.approve` and
+  `Submissions.setScores` write `score`. Collection names live in the schema
+  `collection` option — never pass a collection to `db.model()`, which would
+  recompile the model on every request.
 - `erxes-ui`, `ui-modules` and `erxes-api-shared` are the npm packages
   `@erxes/ui`, `@erxes/ui-modules` and `@erxes/api-shared`, installed under
   those import names with exact npm aliases. The tested cohort is

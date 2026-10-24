@@ -2,17 +2,40 @@ import { resolvers } from "../apollo/resolvers/index.ts";
 import type { IContext } from "../connectionResolvers.ts";
 import { SPEC_MUTATIONS, SPEC_QUERIES } from "./helpers/spec.ts";
 
-type Resolver = (root: unknown, args: unknown, context: IContext) => Promise<unknown>;
+// `never` args: each resolver declares its own argument type.
+type Resolver = (root: unknown, args: never, context: IContext) => Promise<unknown>;
 
 const queries: Record<string, Resolver> = resolvers.Query;
 const mutations: Record<string, Resolver> = resolvers.Mutation;
+
+// Operations with a real body; the rest still answer "Хэрэгжээгүй байна".
+const IMPLEMENTED = new Set([
+  "edureportClassList",
+  "edureportClassDetail",
+  "edureportClassAdd",
+  "edureportClassEdit",
+  "edureportClassRemove",
+  "edureportStudentList",
+  "edureportStudentsImport",
+  "edureportAttendanceList",
+  "edureportAttendanceMark",
+  "edureportRubricList",
+  "edureportRubricSave",
+  "edureportAssignmentList",
+  "edureportAssignmentAdd",
+  "edureportScoresSet",
+  "edureportSubmissionList",
+  "edureportSubmissionDetail",
+  "edureportSubmissionsAdd",
+  "edureportSubmissionApprove",
+]);
 
 const run = (resolver: Resolver | undefined, checkPermission: IContext["checkPermission"]) => {
   if (!resolver) {
     throw new Error("resolver is missing");
   }
 
-  return resolver(undefined, {}, { checkPermission } as unknown as IContext);
+  return resolver(undefined, {} as never, { checkPermission } as unknown as IContext);
 };
 
 describe.each([
@@ -32,9 +55,12 @@ describe.each([
     expect(checkPermission).toHaveBeenCalledWith(action);
   });
 
-  it.each(Object.keys(spec))("%s is not implemented yet", async (name) => {
-    const checkPermission = jest.fn<Promise<void>, [string]>().mockResolvedValue();
+  it.each(Object.keys(spec).filter((name) => !IMPLEMENTED.has(name)))(
+    "%s is not implemented yet",
+    async (name) => {
+      const checkPermission = jest.fn<Promise<void>, [string]>().mockResolvedValue();
 
-    await expect(run(map[name], checkPermission)).rejects.toThrow("Хэрэгжээгүй байна");
-  });
+      await expect(run(map[name], checkPermission)).rejects.toThrow("Хэрэгжээгүй байна");
+    },
+  );
 });
