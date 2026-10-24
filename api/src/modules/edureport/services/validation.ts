@@ -53,6 +53,50 @@ export const assertPercent = (value: number | null | undefined, label: string): 
   }
 };
 
+export const MAX_CRITERIA = 8;
+
+// Non-blank text the schema requires; checked here so the error is Mongolian
+// rather than mongoose's.
+export const assertFilled = (value: string, label: string): void => {
+  if (!value.trim()) {
+    throw new ExpectedError(`${label} хоосон байна`);
+  }
+};
+
+export const assertMaxScore = (maxScore: number): void => {
+  if (!Number.isFinite(maxScore) || maxScore <= 0) {
+    throw new ExpectedError("Дээд оноо 0-ээс их байна");
+  }
+};
+
+// 1–8 criteria, each with a key and title, keys unique within the rubric.
+export const assertRubricCriteria = (criteria: readonly { key: string; title: string }[]): void => {
+  if (criteria.length < 1 || criteria.length > MAX_CRITERIA) {
+    throw new ExpectedError(`Шалгуур 1-ээс ${MAX_CRITERIA} байна`);
+  }
+
+  const keys = new Set<string>();
+
+  for (const { key, title } of criteria) {
+    assertFilled(key, "Шалгуурын түлхүүр");
+    assertFilled(title, "Шалгуурын нэр");
+
+    if (keys.has(key)) {
+      throw new ExpectedError(`Шалгуурын түлхүүр давхардсан байна: "${key}"`);
+    }
+
+    keys.add(key);
+  }
+};
+
+export const assertEssayTexts = (items: readonly { text: string }[]): void => {
+  items.forEach(({ text }, index) => {
+    if (text.length > MAX_ESSAY_LENGTH) {
+      throw new ExpectedError(`${index + 1}-р эссэ ${MAX_ESSAY_LENGTH} тэмдэгтээс урт байна`);
+    }
+  });
+};
+
 const studentRowSchema = z.object({
   name: z.string().trim().min(1, "Нэр хоосон байна"),
   code: z.string().trim().min(1, "Код хоосон байна"),

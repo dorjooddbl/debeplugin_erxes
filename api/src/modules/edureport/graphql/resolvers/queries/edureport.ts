@@ -1,5 +1,11 @@
 import type { IContext } from "../../../../../connectionResolvers.ts";
-import { assertClassAccess, classScopeFilter } from "../../../services/access.ts";
+import type { SubmissionStatus } from "../../../@types/index.ts";
+import {
+  assertAssignmentAccess,
+  assertClassAccess,
+  assertSubmissionAccess,
+  teacherScopeFilter,
+} from "../../../services/access.ts";
 import { assertDateRange, parsePage } from "../../../services/validation.ts";
 import { notImplemented } from "../notImplemented.ts";
 
@@ -13,7 +19,7 @@ export const edureportQueries = {
     await context.checkPermission("showClasses");
 
     const { skip, limit } = parsePage(args);
-    const filter = { ...(await classScopeFilter(context)), ...(args.term ? { term: args.term } : {}) };
+    const filter = { ...(await teacherScopeFilter(context)), ...(args.term ? { term: args.term } : {}) };
 
     const [list, totalCount] = await Promise.all([
       context.models.Classes.find(filter).sort({ createdAt: -1, _id: 1 }).skip(skip).limit(limit),
@@ -49,10 +55,41 @@ export const edureportQueries = {
   },
 
   edureportAttendanceSummary: notImplemented("showClasses"),
-  edureportRubricList: notImplemented("showClasses"),
-  edureportAssignmentList: notImplemented("showClasses"),
-  edureportSubmissionList: notImplemented("showClasses"),
-  edureportSubmissionDetail: notImplemented("showClasses"),
+
+  // The user's own rubrics; owners and classesViewAll see every teacher's.
+  async edureportRubricList(_root: unknown, _args: unknown, context: IContext) {
+    await context.checkPermission("showClasses");
+
+    return context.models.Rubrics.find(await teacherScopeFilter(context)).sort({ createdAt: -1, _id: 1 });
+  },
+
+  async edureportAssignmentList(_root: unknown, { classId }: { classId: string }, context: IContext) {
+    await context.checkPermission("showClasses");
+    await assertClassAccess(context.models, context, classId);
+
+    return context.models.Assignments.listByClass(classId);
+  },
+
+  async edureportSubmissionList(
+    _root: unknown,
+    { assignmentId, status }: { assignmentId: string; status?: SubmissionStatus | null },
+    context: IContext,
+  ) {
+    await context.checkPermission("showClasses");
+    await assertAssignmentAccess(context.models, context, assignmentId);
+
+    return context.models.Submissions.find({ assignmentId, ...(status ? { status } : {}) }).sort({
+      createdAt: 1,
+      _id: 1,
+    });
+  },
+
+  async edureportSubmissionDetail(_root: unknown, { _id }: { _id: string }, context: IContext) {
+    await context.checkPermission("showClasses");
+
+    return assertSubmissionAccess(context.models, context, _id);
+  },
+
   edureportReportDetail: notImplemented("showClasses"),
   edureportReportList: notImplemented("showClasses"),
   edureportJobStatus: notImplemented("showClasses"),

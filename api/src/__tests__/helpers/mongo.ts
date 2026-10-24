@@ -3,8 +3,11 @@ import { type IModels, loadClasses } from "../../connectionResolvers.ts";
 
 // Real-Mongo tests run only when EDUREPORT_TEST_MONGO_URL is set (never
 // MONGO_URL: docs/SPEC.md §8). Each suite works in its own throwaway
-// database, edureport_jest_<pid>_<time>, and drops only that database.
+// database, edureport_jest_<pid>_<time>, and removes only that database.
 const url = process.env.EDUREPORT_TEST_MONGO_URL;
+
+const isMissingCollection = (error: unknown) =>
+  typeof error === "object" && error !== null && "codeName" in error && error.codeName === "NamespaceNotFound";
 
 export const describeWithMongo = url ? describe : describe.skip;
 
@@ -24,8 +27,18 @@ export const connectTestModels = async () => {
 
   return {
     models,
+    // A readWrite user (the Atlas test user) may not dropDatabase, but may
+    // drop collections; once the last one goes, so does the database.
     close: async () => {
-      await db.dropDatabase();
+      await Promise.all(
+        Object.values(models).map((model) =>
+          model.collection.drop().catch((error: unknown) => {
+            if (!isMissingCollection(error)) {
+              throw error;
+            }
+          }),
+        ),
+      );
       await base.close();
     },
   };

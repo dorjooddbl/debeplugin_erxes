@@ -19,6 +19,15 @@ const IMPLEMENTED = new Set([
   "edureportStudentsImport",
   "edureportAttendanceList",
   "edureportAttendanceMark",
+  "edureportRubricList",
+  "edureportRubricSave",
+  "edureportAssignmentList",
+  "edureportAssignmentAdd",
+  "edureportScoresSet",
+  "edureportSubmissionList",
+  "edureportSubmissionDetail",
+  "edureportSubmissionsAdd",
+  "edureportSubmissionApprove",
 ]);
 
 const run = (resolver: Resolver | undefined, checkPermission: IContext["checkPermission"]) => {
