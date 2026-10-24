@@ -8,7 +8,8 @@
     "start": "node --env-file-if-exists=../.env dist/main.js",
     "check": "tsc --noEmit && tsc --noEmit -p tsconfig.spec.json",
     "schema:print": "tsx src/print-schema.ts",
-    "test": "jest"
+    "test": "jest",
+    "seed": "tsx --env-file-if-exists=../.env src/seed/seed.ts"
   },
   "dependencies": {
     "erxes-api-shared": "npm:@erxes/api-shared@3.3.4",
