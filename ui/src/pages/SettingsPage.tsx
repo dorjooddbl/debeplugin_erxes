@@ -1,4 +1,4 @@
-import { IconAdjustments, IconSandbox, IconSettings } from "@tabler/icons-react";
+import { IconAdjustments, IconSchool, IconSettings } from "@tabler/icons-react";
 import { Breadcrumb, Button, Card, Empty, Separator } from "erxes-ui";
 import { PageHeader } from "ui-modules";
 import { Link } from "react-router";
@@ -7,11 +7,11 @@ import manifest from "../../../erxes.json" with { type: "json" };
 const { path } = manifest.ui;
 
 const IDENTITY: [string, string][] = [
-  ["Name", manifest.name],
-  ["Route", `/${path}`],
+  ["Нэр", manifest.name],
+  ["Зам", `/${path}`],
   ["Remote", manifest.ui.remote],
   ["API", `:${manifest.api.port}${manifest.api.graphql}`],
-  ["Version", manifest.version],
+  ["Хувилбар", manifest.version],
 ];
 
 export const SettingsPage = () => (
@@ -24,7 +24,7 @@ export const SettingsPage = () => (
               <Button variant="ghost" asChild>
                 <Link to={`/${path}/settings`}>
                   <IconSettings />
-                  {manifest.title} settings
+                  {manifest.title} тохиргоо
                 </Link>
               </Button>
             </Breadcrumb.Item>
@@ -32,15 +32,15 @@ export const SettingsPage = () => (
         </Breadcrumb>
         <Separator.Inline />
         <PageHeader.FavoriteToggleButton
-          breadcrumb={[manifest.title, "settings"]}
+          breadcrumb={[manifest.title, "Тохиргоо"]}
           icon="IconSettings"
         />
       </PageHeader.Start>
       <PageHeader.End>
         <Button variant="outline" asChild>
           <Link to={`/${path}`}>
-            <IconSandbox />
-            Back to {manifest.title}
+            <IconSchool />
+            {manifest.title} руу буцах
           </Link>
         </Button>
       </PageHeader.End>
@@ -49,10 +49,10 @@ export const SettingsPage = () => (
       <div className="edureport:mx-auto edureport:flex edureport:w-full edureport:max-w-3xl edureport:flex-col edureport:gap-6 edureport:p-6">
         <Card>
           <Card.Header>
-            <Card.Title>General</Card.Title>
+            <Card.Title>Ерөнхий</Card.Title>
             <Card.Description>
-              Plugin identity comes from erxes.json; change it there and
-              restart.
+              Плагины мэдээлэл erxes.json-оос ирнэ; тэнд өөрчлөөд дахин
+              эхлүүлнэ.
             </Card.Description>
           </Card.Header>
           <Card.Content>
@@ -75,10 +75,10 @@ export const SettingsPage = () => (
         </Card>
         <Card>
           <Card.Header>
-            <Card.Title>Your settings</Card.Title>
+            <Card.Title>Тохиргоо</Card.Title>
             <Card.Description>
-              Add this plugin's own configuration here: forms with Form from
-              erxes-ui, saved through a prefixed mutation.
+              Ангийн анхаарах босгыг «Анги, сурагчид» хуудасны «Засах»-аас
+              тохируулна.
             </Card.Description>
           </Card.Header>
           <Card.Content>
@@ -87,9 +87,9 @@ export const SettingsPage = () => (
                 <Empty.Media variant="icon">
                   <IconAdjustments />
                 </Empty.Media>
-                <Empty.Title>No settings yet</Empty.Title>
+                <Empty.Title>Нэмэлт тохиргоо алга</Empty.Title>
                 <Empty.Description>
-                  Edit ui/src/pages/SettingsPage.tsx to add them.
+                  Плагины бусад тохиргоо одоогоор шаардлагагүй.
                 </Empty.Description>
               </Empty.Header>
             </Empty>
