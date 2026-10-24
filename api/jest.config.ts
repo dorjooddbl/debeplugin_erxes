@@ -8,6 +8,10 @@ export default {
     // `check` and `build` (tsc), not here.
     "^.+\\.ts$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json", diagnostics: false }],
   },
-  moduleFileExtensions: ["ts", "js"],
+  moduleFileExtensions: ["ts", "js", "cjs"],
+  moduleNameMapper: {
+    // The real bundle opens Redis on import and keeps jest alive.
+    "^erxes-api-shared/utils$": "<rootDir>/src/__tests__/helpers/sharedUtils.ts",
+  },
   testMatch: ["<rootDir>/src/**/*.test.ts"],
 } satisfies Config;

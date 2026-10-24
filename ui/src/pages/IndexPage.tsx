@@ -23,7 +23,7 @@ import {
 import { PageHeader } from "ui-modules";
 import { Link } from "react-router";
 import manifest from "../../../erxes.json" with { type: "json" };
-import { HEALTH_QUERY } from "../graphql";
+import { CLASS_COUNT_QUERY } from "../graphql";
 
 const { path } = manifest.ui;
 
@@ -46,7 +46,7 @@ const StatusRow = ({ label, children }: { label: string; children: ReactNode }) 
 );
 
 const ConnectionCard = () => {
-  const { data, loading, error, refetch } = useQuery(HEALTH_QUERY);
+  const { data, loading, error, refetch } = useQuery(CLASS_COUNT_QUERY);
 
   const pending = (
     <>
@@ -70,7 +70,7 @@ const ConnectionCard = () => {
           ) : error ? (
             <>
               <Dot className="edureport:bg-destructive" />
-              <span>Unreachable</span>
+              <span>Error</span>
               <Button variant="ghost" size="sm" onClick={() => refetch()}>
                 Retry
               </Button>
@@ -79,7 +79,7 @@ const ConnectionCard = () => {
             <>
               <Dot className="edureport:bg-success" />
               <span>
-                {data?.edureportHealth === "ok" ? "Connected" : "Unexpected reply"} · v
+                Connected · {data?.edureportClassList.totalCount ?? 0} classes · v
                 {manifest.version}
               </span>
             </>

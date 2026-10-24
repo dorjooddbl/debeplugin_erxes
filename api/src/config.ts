@@ -15,6 +15,8 @@ const manifestSchema = z.object({
     graphql: z.string(),
     health: z.string(),
   }),
+  // ui.name is the public permission identity (docs/erxes-integration.md).
+  ui: z.object({ name: z.string() }),
 });
 
 export const manifest = manifestSchema.parse(

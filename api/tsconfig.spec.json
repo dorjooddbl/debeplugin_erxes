@@ -6,6 +6,6 @@
     "rewriteRelativeImportExtensions": false,
     "types": ["jest", "node"]
   },
-  "include": ["jest.config.ts", "src/**/*.test.ts"],
+  "include": ["jest.config.ts", "src/**/*.test.ts", "src/__tests__"],
   "exclude": []
 }
