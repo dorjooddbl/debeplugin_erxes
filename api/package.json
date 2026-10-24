@@ -1,13 +1,14 @@
 {
-  "name": "debe_api",
+  "name": "edureport_api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=../.env src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node --env-file-if-exists=../.env dist/main.js",
-    "check": "tsc --noEmit",
-    "schema:print": "tsx src/print-schema.ts"
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.spec.json",
+    "schema:print": "tsx src/print-schema.ts",
+    "test": "jest"
   },
   "dependencies": {
     "erxes-api-shared": "npm:@erxes/api-shared@3.3.4",
@@ -18,7 +19,11 @@
   },
   "devDependencies": {
     "@apollo/subgraph": "^2.15.1",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.20.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.15",
+    "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }

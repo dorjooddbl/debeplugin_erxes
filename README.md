@@ -1,6 +1,6 @@
-# Debe
+# EduReport
 
-Debe plugin for erxes
+Term reports and rubric-based essay feedback drafts for teachers, as an erxes plugin. See [docs/SPEC.md](docs/SPEC.md).
 
 An erxes plugin that lives outside the erxes monorepo and joins an erxes stack.
 The shared-library baseline is erxes 3.3.2. Dashed plugin names
@@ -35,10 +35,10 @@ In the erxes checkout `.env`, add the plugin and restart the gateway and
 core-api so they pick it up:
 
 ```sh
-ENABLED_PLUGINS=...,debe
+ENABLED_PLUGINS=...,edureport
 ```
 
-Then open `http://localhost:3001/debe` (settings: `/debe/settings`).
+Then open `http://localhost:3001/edureport` (settings: `/edureport/settings`).
 Both processes must use the same Redis as erxes; `UI_ENTRY_URL` must be
 reachable by the browser, not merely by the API container. Requests reach the
 API through the gateway (`/graphql`), which forwards the signed-in user and
@@ -62,10 +62,10 @@ a private gateway-only network and strip user/tenant headers at public ingress.
 - **API**: `docker build --build-arg UI_ENTRY_URL=<remoteEntry.js URL> -t <image> .`
   Run `pnpm install` first and commit its lockfile before building the image.
   The image serves the API on port 80 and registers itself on start
-  (`plugin-debe-api:80` unless `LOAD_BALANCER_ADDRESS` is set).
+  (`plugin-edureport-api:80` unless `LOAD_BALANCER_ADDRESS` is set).
 - **UI**: upload `ui/dist` to a static host or CDN. Upload hashed assets
   first and `remoteEntry.js` last with `Cache-Control: no-store`. Without
-  `UI_ENTRY_URL`, erxes falls back to `https://plugins.erxes.io/<release>/debe_ui/remoteEntry.js`;
+  `UI_ENTRY_URL`, erxes falls back to `https://plugins.erxes.io/<release>/edureport_ui/remoteEntry.js`;
   this generator does not upload there. Set your own browser-reachable URL,
   serve all emitted chunks with CORS for the erxes origin, and use immutable
   caching only for content-hashed assets (not stable-named expose chunks).

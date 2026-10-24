@@ -9,7 +9,7 @@ COPY ui/package.json ui/
 RUN pnpm install --frozen-lockfile
 COPY erxes.json ./
 COPY api api
-RUN pnpm --filter debe_api build
+RUN pnpm --filter edureport_api build
 
 FROM base AS runtime
 ENV NODE_ENV=production PORT=80

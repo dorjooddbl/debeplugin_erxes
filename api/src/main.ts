@@ -1,8 +1,8 @@
 import { startPlugin } from "erxes-api-shared/utils";
+import { resolvers } from "./apollo/resolvers/index.ts";
+import { typeDefs } from "./apollo/typeDefs.ts";
 import { manifest } from "./config.ts";
 import { generateModels } from "./connectionResolvers.ts";
-import { resolvers, typeDefs } from "./graphql/schema.ts";
-import { permissions } from "./permissions.ts";
 
 // startPlugin serves the federated subgraph on /graphql, mounts /health,
 // wires tRPC + agent-tools, parses the gateway `user`/`hostname` headers into
@@ -11,7 +11,6 @@ import { permissions } from "./permissions.ts";
 startPlugin({
   name: manifest.name,
   port: manifest.api.port,
-  meta: { permissions },
   graphql: async () => ({ typeDefs, resolvers }),
   apolloServerContext: async (subdomain, context) => {
     context.models = await generateModels(subdomain, context);

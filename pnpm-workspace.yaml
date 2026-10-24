@@ -1,3 +1,17 @@
 packages:
   - api
   - ui
+allowBuilds:
+  '@apollo/protobufjs': false
+  aws-sdk: false
+  core-js-pure: false
+  esbuild: true
+  msgpackr-extract: false
+# pnpm 11+ reads settings only from this file, not from package.json "pnpm".
+overrides:
+  react: 18.3.1
+  react-dom: 18.3.1
+  '@sentry/node': 10.76.2
+  '@opentelemetry/api': 1.9.1
+  '@opentelemetry/instrumentation': 0.220.0
+  '@opentelemetry/sdk-trace-base': 2.12.0

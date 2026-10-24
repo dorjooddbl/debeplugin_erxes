@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Jest resolves the `.ts` specifiers as written; rewriting them to `.js`
+    // would point at files that only exist after `build`.
+    "rewriteRelativeImportExtensions": false,
+    "types": ["jest", "node"]
+  },
+  "include": ["jest.config.ts", "src/**/*.test.ts"],
+  "exclude": []
+}

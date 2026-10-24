@@ -16,7 +16,7 @@ const SettingsPage = lazy(() =>
 
 // core-ui mounts this component at `/<path>/*`; routes below are relative to
 // it. It resolves the component by the PascalCase expose name.
-export const Debe = () => (
+export const Edureport = () => (
   <AppLayout id={manifest.name} title={manifest.title} sidebar={<Navigation />}>
     <Suspense fallback={<div role="status">Loading…</div>}>
       <Routes>
