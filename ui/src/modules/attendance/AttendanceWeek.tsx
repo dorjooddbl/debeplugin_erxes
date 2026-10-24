@@ -27,12 +27,17 @@ const markKey = (studentId: string, date: string) => `${studentId}|${date}`;
 
 const percent = (count: number, total: number) => (total ? `${Math.round((count / total) * 1000) / 10}%` : "—");
 
-// The day a week opens on: today in the current week, otherwise its Monday.
+// The day a week opens on: the latest school day up to today (Friday on a
+// weekend, today on a school day).
 const defaultDay = (weekStart: string) => {
   const now = today();
   const end = addDays(weekStart, SCHOOL_DAYS - 1);
 
-  return now >= weekStart && now <= end ? now : weekStart;
+  if (now > end) {
+    return end;
+  }
+
+  return now >= weekStart ? now : weekStart;
 };
 
 // One school week of one class: the saved marks as a matrix, with the
