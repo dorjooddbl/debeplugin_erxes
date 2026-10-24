@@ -15,11 +15,11 @@ const IDENTITY: [string, string][] = [
 ];
 
 export const SettingsPage = () => (
-  <div className="debe:flex debe:h-full debe:flex-col">
+  <div className="edureport:flex edureport:h-full edureport:flex-col">
     <PageHeader>
       <PageHeader.Start>
         <Breadcrumb>
-          <Breadcrumb.List className="debe:gap-1">
+          <Breadcrumb.List className="edureport:gap-1">
             <Breadcrumb.Item>
               <Button variant="ghost" asChild>
                 <Link to={`/${path}/settings`}>
@@ -45,8 +45,8 @@ export const SettingsPage = () => (
         </Button>
       </PageHeader.End>
     </PageHeader>
-    <div className="debe:flex-1 debe:overflow-auto">
-      <div className="debe:mx-auto debe:flex debe:w-full debe:max-w-3xl debe:flex-col debe:gap-6 debe:p-6">
+    <div className="edureport:flex-1 edureport:overflow-auto">
+      <div className="edureport:mx-auto edureport:flex edureport:w-full edureport:max-w-3xl edureport:flex-col edureport:gap-6 edureport:p-6">
         <Card>
           <Card.Header>
             <Card.Title>General</Card.Title>
@@ -56,15 +56,15 @@ export const SettingsPage = () => (
             </Card.Description>
           </Card.Header>
           <Card.Content>
-            <dl className="debe:grid debe:grid-cols-[8rem_1fr] debe:gap-y-2 debe:text-sm">
+            <dl className="edureport:grid edureport:grid-cols-[8rem_1fr] edureport:gap-y-2 edureport:text-sm">
               {IDENTITY.map(([label, value]) => (
                 <div
                   key={label}
-                  className="debe:contents"
+                  className="edureport:contents"
                 >
-                  <dt className="debe:text-muted-foreground">{label}</dt>
+                  <dt className="edureport:text-muted-foreground">{label}</dt>
                   <dd>
-                    <code className="debe:rounded debe:bg-muted debe:px-1.5 debe:py-0.5 debe:font-mono debe:text-xs">
+                    <code className="edureport:rounded edureport:bg-muted edureport:px-1.5 edureport:py-0.5 edureport:font-mono edureport:text-xs">
                       {value}
                     </code>
                   </dd>

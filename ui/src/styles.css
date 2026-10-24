@@ -2,9 +2,9 @@
   Tailwind for an erxes UI remote.
 
   core-ui already ships preflight and its own (unprefixed) utilities. This
-  remote compiles only the utilities it uses, behind the `debe:`
+  remote compiles only the utilities it uses, behind the `edureport:`
   prefix, so its CSS can never override the host or another plugin. Write
-  classes as `debe:flex debe:p-6 debe:text-muted-foreground`.
+  classes as `edureport:flex edureport:p-6 edureport:text-muted-foreground`.
 
   The @theme block below mirrors the erxes-ui theme contract
   (erxes-ui/src/theme.css): it maps utilities to the design tokens the host
@@ -12,7 +12,7 @@
   the host's global stylesheet a second time.
 */
 @layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme) prefix(debe);
+@import "tailwindcss/theme.css" layer(theme) prefix(edureport);
 @import "tailwindcss/utilities.css" layer(utilities) source(none);
 @source "./";
 

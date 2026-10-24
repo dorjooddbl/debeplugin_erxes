@@ -1,7 +1,7 @@
 import { buildSubgraphSchema } from "@apollo/subgraph";
 import { printSchema } from "graphql";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { typeDefs } from "./graphql/schema.ts";
+import { typeDefs } from "./apollo/typeDefs.ts";
 
 // Prints the subgraph SDL that ui/ codegen validates its documents against.
 // Runs from api/ as a package script; needs no Redis, Mongo or running server.

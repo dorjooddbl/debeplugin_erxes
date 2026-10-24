@@ -1,7 +1,7 @@
-# How debe plugs into erxes
+# How edureport plugs into erxes
 
 erxes discovers this plugin at runtime through the same Redis used by the API.
-Enable `debe` in `ENABLED_PLUGINS` on the gateway and core-api, and restart
+Enable `edureport` in `ENABLED_PLUGINS` on the gateway and core-api, and restart
 them. No monorepo workspace or source import is required.
 
 ## Names
@@ -10,11 +10,11 @@ All of these come from `erxes.json`. They must stay consistent.
 
 | Name           | Value                      | Used by                                                        |
 | -------------- | -------------------------- | -------------------------------------------------------------- |
-| `name`         | `debe`                 | Redis keys, `ENABLED_PLUGINS`, CDN folder, docker host         |
-| `ui.name`      | `debe`                 | `CONFIG.name`, permissions, page expose `./debe`                          |
-| `ui.remote`    | `debe_ui`               | Module Federation container (core-api derives it from `name`)  |
-| `ui.path`      | `debe`                 | Route `/debe/*` in core-ui                                 |
-| GraphQL prefix | `debe` / `Debe` | Operation, field and type names (unique across the supergraph) |
+| `name`         | `edureport`                 | Redis keys, `ENABLED_PLUGINS`, CDN folder, docker host         |
+| `ui.name`      | `edureport`                 | `CONFIG.name`, permissions, page expose `./edureport`                          |
+| `ui.remote`    | `edureport_ui`               | Module Federation container (core-api derives it from `name`)  |
+| `ui.path`      | `edureport`                 | Route `/edureport/*` in core-ui                                 |
+| GraphQL prefix | `edureport` / `Edureport` | Operation, field and type names (unique across the supergraph) |
 
 **Dashed names:** `inventory` maps to `inventory_ui` / `./inventory`;
 `inventory-tools` maps to the container `inventory_tools_ui`, page expose
@@ -29,8 +29,8 @@ authorization remains required regardless of host route guards.
 ## API registration
 
 On start, erxes-api-shared `startPlugin` writes what
-`joinErxesGateway` writes: the `erxesservice:config:debe` JSON
-(`uiEntry` from `UI_ENTRY_URL`), the `erxes-service-debe` address, and
+`joinErxesGateway` writes: the `erxesservice:config:edureport` JSON
+(`uiEntry` from `UI_ENTRY_URL`), the `erxes-service-edureport` address, and
 in production the router-update lock plus the BullMQ
 `gateway-update-apollo-router` job.
 
@@ -49,18 +49,18 @@ The gateway only composes plugins listed in its `ENABLED_PLUGINS`.
 
 ## UI loading
 
-1. core-api `GET /get-frontend-plugins` returns `{ name: "debe_ui", entry }`
+1. core-api `GET /get-frontend-plugins` returns `{ name: "edureport_ui", entry }`
    for each enabled plugin. `entry` is the registered `uiEntry`, or
-   `https://plugins.erxes.io/<releaseVersion>/debe_ui/remoteEntry.js`.
-2. core-ui loads `debe_ui/config` and reads the exported `CONFIG`.
-3. core-ui routes `/<CONFIG.path>/*` to `debe_ui/<CONFIG.name>`, rendering
-   the page component `Debe`. The page owns its `AppLayout`, sidebar and
-   nested settings route `/debe/settings`. CONFIG supplies a navigation
+   `https://plugins.erxes.io/<releaseVersion>/edureport_ui/remoteEntry.js`.
+2. core-ui loads `edureport_ui/config` and reads the exported `CONFIG`.
+3. core-ui routes `/<CONFIG.path>/*` to `edureport_ui/<CONFIG.name>`, rendering
+   the page component `Edureport`. The page owns its `AppLayout`, sidebar and
+   nested settings route `/edureport/settings`. CONFIG supplies a navigation
    group `defaultPath` and module paths relative to the host root, including the
-   plugin prefix (for example, `debe/records`, not just `records`). Sidebar
+   plugin prefix (for example, `edureport/records`, not just `records`). Sidebar
    links use a leading `/`; CONFIG paths do not. The host does not use
    the old `settingsNavigation` or navigation-group `content`/`subGroup` slots.
-   Only `./config` and `./debe` are baseline exposes; add optional widgets
+   Only `./config` and `./edureport` are baseline exposes; add optional widgets
    when there is actual functionality behind them.
 4. The `hostShared` list in `ui/rspack.config.ts` — `react`, `react-dom`,
    `react-router`, `react-router-dom`, `@apollo/client`, `jotai`,
@@ -145,7 +145,7 @@ plugin.
 ## Styling
 
 core-ui ships Tailwind preflight and unprefixed utilities for its own code.
-This remote compiles its own utilities with the `debe:` prefix
+This remote compiles its own utilities with the `edureport:` prefix
 (`ui/src/styles.css`), mapped to the host's design tokens (`--background`,
 `--muted-foreground`, …). The prefix keeps the plugin's CSS from overriding
 the host or other plugins. `erxes-ui` components come pre-styled by the host's
@@ -156,13 +156,13 @@ own CSS — no extra setup needed.
 core-ui guards the route with `hasPluginPermission(CONFIG.name)`, which only
 restricts plugins that core-api lists in `pluginsWithPermissions`, i.e. plugins
 whose registered `meta.permissions` declares modules or default groups.
-The registered API permission plugin and `CONFIG.name` both use `debe`,
-including dashes. The normalized container `debe_ui` is only a loading key;
+The registered API permission plugin and `CONFIG.name` both use `edureport`,
+including dashes. The normalized container `edureport_ui` is only a loading key;
 it must never replace that public permission identity.
 Enforce access in the API resolvers, never only in the UI.
 
 On the platform stack, `api/src/permissions.ts` declares
-`debeSamplesRead` and `main.ts` registers it as `meta.permissions`.
+`edureportSamplesRead` and `main.ts` registers it as `meta.permissions`.
 The sample list requires a user, a tenant and `await checkPermission(action)`
 before reading `context.models.Samples`. An administrator must grant the
 sample module's read action with `all` scope (or use an owner account). There
@@ -199,7 +199,7 @@ reach the API directly; parsing it is not independent authentication.
 Install and retain the generated lockfile before the API Docker build. Supply
 MongoDB (platform stack), Redis and gateway addressing through deployment
 environment variables. Redis must be the same service/database erxes uses.
-The API address (`LOAD_BALANCER_ADDRESS` or `plugin-debe-api:<port>`) must be
+The API address (`LOAD_BALANCER_ADDRESS` or `plugin-edureport-api:<port>`) must be
 reachable by the gateway; it is not the UI address. Production registration
 must keep the router-update BullMQ job so the gateway recomposes.
 
