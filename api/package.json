@@ -14,6 +14,7 @@
   "dependencies": {
     "@ai-sdk/openai": "4.0.91",
     "ai": "7.0.136",
+    "bullmq": "^5.81.5",
     "erxes-api-shared": "npm:@erxes/api-shared@3.3.4",
     "graphql": "^16.14.2",
     "graphql-tag": "^2.12.7",
